@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Clicker :333333333</title>
+    <style>
+        /* --- THEME --- */
+        :root {
+            --bg-color: #1a1a1a;
+            --btn-color: #1f6aa5;
+            --btn-hover: #144870;
+            --text-color: #ffffff;
+            --status-color: #808080;
+        }
+
+        body {
+            margin: 0;
+            background-color: #000;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            color: var(--text-color);
+            user-select: none;
+        }
+
+        .app-window {
+            width: 320px;
+            height: 200px;
+            background-color: var(--bg-color);
+            border: 1px solid #333;
+            border-radius: 10px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+        }
+
+        .btn-action {
+            background-color: var(--btn-color);
+            color: white;
+            border: none;
+            width: 220px;
+            height: 56px;
+            border-radius: 14px;
+            font-size: 18px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            outline: none;
+        }
+
+        .btn-action:hover { background-color: var(--btn-hover); transform: translateY(-1px); }
+        .btn-action:active { transform: translateY(1px); }
+        .btn-action:disabled { background-color: #3a3a3a; color: #888; cursor: not-allowed; transform: none; }
+
+        .lbl-status {
+            margin-top: 15px;
+            font-size: 11px;
+            color: var(--status-color);
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="app-window">
+        <button id="clickBtn" class="btn-action">Click :3</button>
+        <div class="lbl-status">Triggers listener @ ngrok-free.dev</div>
+    </div>
+
+    <script>
+        // --- CONFIGURATION ---
+        const LISTENER_URL = "https://unfancied-siegeable-jude.ngrok-free.dev/click";
+        const AUTO_REMOTE_URL = "https://autoremotejoaomgcd.appspot.com/sendmessage";
+        const PROXY_URL = "https://corsproxy.io/?";
+
+        const PAYLOAD_DATA = {
+            "key": "c9f-IOZniHs:APA91bFBIX-ehMJ8PC3F_g1wAYrL6yRl_YlwWcmcsBArZ0VSxa9PBzP2WoPXgaE22cXCX-na-gwNMEb3zUdsVRNrtuu4sBdNfFQwP7h5Fm_n40FJIRuBFn4",
+            "message": "ck",
+            "password": "clicker"
+        };
+
+        const btn = document.getElementById('clickBtn');
+
+        btn.addEventListener('click', async () => {
+            // 1. Update UI
+            btn.innerText = "Sending...";
+            btn.setAttribute('disabled', 'true');
+
+            // 2. Generate Timestamp (Crucial for bypassing cache)
+            const timestamp = Date.now();
+            const arParams = new URLSearchParams(PAYLOAD_DATA);
+            arParams.append("_t", timestamp);
+
+            // --- THE "SHOTGUN" STRATEGY ---
+            // We fire all 3 methods simultaneously. We don't wait for errors.
+            
+            // METHOD A: AutoRemote (Blind Fetch)
+            // Uses 'no-cors' to ignore browser security complaints.
+            const reqAutoRemote = fetch(`${AUTO_REMOTE_URL}?${arParams.toString()}`, { 
+                method: 'GET', 
+                mode: 'no-cors' 
+            }).catch(e => console.log("AR Fail (Ignored)"));
+
+
+            // METHOD B: Ngrok "Image Beacon" (The Secret Weapon)
+            // Tries to load the Ngrok URL as an image. This bypasses many CORS rules.
+            // It often succeeds even if the Proxy fails.
+            const imgBeacon = new Image();
+            imgBeacon.src = `${LISTENER_URL}?method=img&_t=${timestamp}`;
+
+
+            // METHOD C: Ngrok Proxy (The "Correct" Way)
+            // Wraps the request in a proxy and adds headers to satisfy Ngrok.
+            const directNgrokUrl = `${LISTENER_URL}?_t=${timestamp}`;
+            const proxyNgrokUrl = `${PROXY_URL}${encodeURIComponent(directNgrokUrl)}`;
+            
+            const reqProxy = fetch(proxyNgrokUrl, {
+                method: 'GET',
+                headers: {
+                    'Ngrok-Skip-Browser-Warning': 'true'
+                }
+            }).catch(e => console.log("Proxy Fail (Ignored)"));
+
+
+            // 3. Reset UI
+            // We wait 300ms just for visual feedback, then assume success.
+            await Promise.all([reqAutoRemote, reqProxy]); // We await the fetches but not the image
+            
+            setTimeout(() => {
+                btn.innerText = "Click :3";
+                btn.removeAttribute('disabled');
+                console.log("Cycle Complete");
+            }, 300);
+        });
+    </script>
+</body>
+</html>

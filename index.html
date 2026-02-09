@@ -69,14 +69,16 @@
 
     <div class="app-window">
         <button id="clickBtn" class="btn-action">Click :3</button>
+        <div id="statusLbl" class="lbl-status"></div>
     </div>
 
     <script>
         // --- CONFIGURATION ---
         const LISTENER_URL = "https://unfancied-siegeable-jude.ngrok-free.dev/click";
         const AUTO_REMOTE_URL = "https://autoremotejoaomgcd.appspot.com/sendmessage";
-        const PROXY_URL = "https://corsproxy.io/?";
 
+        // WARNING: Your API key is visible in client-side code. 
+        // This is fine for personal use, but risky if you publish this site.
         const PAYLOAD_DATA = {
             "key": "c9f-IOZniHs:APA91bFBIX-ehMJ8PC3F_g1wAYrL6yRl_YlwWcmcsBArZ0VSxa9PBzP2WoPXgaE22cXCX-na-gwNMEb3zUdsVRNrtuu4sBdNfFQwP7h5Fm_n40FJIRuBFn4",
             "message": "ck",
@@ -84,59 +86,58 @@
         };
 
         const btn = document.getElementById('clickBtn');
+        const statusLbl = document.getElementById('statusLbl');
 
         btn.addEventListener('click', async () => {
             // 1. Update UI
             btn.innerText = "Sending...";
             btn.setAttribute('disabled', 'true');
+            statusLbl.innerText = "Clicking...";
 
-            // 2. Generate Timestamp (Crucial for bypassing cache)
             const timestamp = Date.now();
+            
+            // --- METHOD A: AutoRemote (GET) ---
             const arParams = new URLSearchParams(PAYLOAD_DATA);
             arParams.append("_t", timestamp);
-
-            // --- THE "SHOTGUN" STRATEGY ---
-            // We fire all 3 methods simultaneously. We don't wait for errors.
             
-            // METHOD A: AutoRemote (Blind Fetch)
-            // Uses 'no-cors' to ignore browser security complaints.
             const reqAutoRemote = fetch(`${AUTO_REMOTE_URL}?${arParams.toString()}`, { 
                 method: 'GET', 
                 mode: 'no-cors' 
-            }).catch(e => console.log("AR Fail (Ignored)"));
+            }).catch(e => console.warn("AR Fail:", e));
 
 
-            // METHOD B: Ngrok "Image Beacon" (The Secret Weapon)
-            // Tries to load the Ngrok URL as an image. This bypasses many CORS rules.
-            // It often succeeds even if the Proxy fails.
-            const imgBeacon = new Image();
-            imgBeacon.src = `${LISTENER_URL}?method=img&_t=${timestamp}`;
-
-
-            // METHOD C: Ngrok Proxy (The "Correct" Way)
-            // Wraps the request in a proxy and adds headers to satisfy Ngrok.
-            const directNgrokUrl = `${LISTENER_URL}?_t=${timestamp}`;
-            const proxyNgrokUrl = `${PROXY_URL}${encodeURIComponent(directNgrokUrl)}`;
+            // --- METHOD B: Ngrok Direct (POST Bypass) ---
+            // Strategy: We send a POST request. Ngrok usually only shows the 
+            // warning page for GET requests from browsers.
+            // We put data in URL AND Body to be safe.
             
-            const reqProxy = fetch(proxyNgrokUrl, {
-                method: 'GET',
+            const ngrokUrl = new URL(LISTENER_URL);
+            // Append params to URL (in case server reads query params)
+            Object.keys(PAYLOAD_DATA).forEach(key => ngrokUrl.searchParams.append(key, PAYLOAD_DATA[key]));
+            ngrokUrl.searchParams.append("_t", timestamp);
+
+            const reqNgrok = fetch(ngrokUrl, {
+                method: 'POST', // POST bypasses Ngrok Interstitial Warning
+                mode: 'no-cors', // Bypasses CORS (Browser won't block the send)
                 headers: {
-                    'Ngrok-Skip-Browser-Warning': 'true'
-                }
-            }).catch(e => console.log("Proxy Fail (Ignored)"));
+                    'Content-Type': 'application/x-www-form-urlencoded'
+                },
+                body: arParams // Send data in body too
+            }).catch(e => console.warn("Ngrok Fail:", e));
 
 
             // 3. Reset UI
-            // We wait 300ms just for visual feedback, then assume success.
-            await Promise.all([reqAutoRemote, reqProxy]); // We await the fetches but not the image
+            // We await the fetch calls. Even if they return "opaque" (error-like) responses
+            // due to no-cors, the request has left the building.
+            await Promise.all([reqAutoRemote, reqNgrok]);
             
             setTimeout(() => {
                 btn.innerText = "Click :3";
                 btn.removeAttribute('disabled');
-                console.log("Cycle Complete");
+                statusLbl.innerText = "Clicked!";
+                console.log("Requests sent.");
             }, 300);
         });
     </script>
 </body>
 </html>
-

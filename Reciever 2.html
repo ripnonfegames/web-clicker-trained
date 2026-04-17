@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" href="style.css">
+    <title>For Emily :3</title></head>
+<body>
+    <div style="display: flex; flex-direction: column; align-items: center; width: 100%;">
+        <button id="readyBtn" class="btn-action" style="margin-bottom: 18px;">Enable Audio & Notifications</button>
+        <p id="status">Waiting for click...</p>
+    </div>
+    <script>
+        const targetId = 2; // Listens for Sender 1
+        const audio = new Audio('click.mp3');
+
+        document.getElementById('readyBtn').addEventListener('click', () => {
+            audio.play().then(() => audio.pause()); 
+            Notification.requestPermission();
+            document.getElementById('readyBtn').style.display = 'none';
+        });
+
+        window.addEventListener('storage', (event) => {
+            if (event.key === 'click_trigger' && event.newValue) {
+                const data = JSON.parse(event.newValue);
+                if (data.id === targetId) {
+                    audio.currentTime = 0;
+                    audio.play();
+                    if (Notification.permission === 'granted') {
+                        new Notification("Alert!", { body: "Button from Page " + data.id + " clicked!" });
+                    }
+                }
+            }
+        });
+    </script>
+</body>
+</html>

@@ -3,11 +3,33 @@
 <head>
     <meta charset="UTF-8">
     <link rel="stylesheet" href="style.css">
+    <style>
+        body {
+            margin: 24px;
+            font-family: Arial, sans-serif;
+        }
+
+        .app-window {
+            margin: 0 auto;
+            padding: 16px;
+            max-width: 360px;
+        }
+
+        .btn-action {
+            margin: 8px 4px;
+        }
+
+        .lbl-status {
+            margin-top: 16px;
+            display: block;
+        }
+    </style>
 </head>
 <body>
 
     <div class="app-window">
         <button id="clickBtn" class="btn-action">Click :3</button>
+        <button id="wkBtn" class="btn-action">Wake up :3</button>
         <div id="statusLbl" class="lbl-status"></div>
     </div>
 
@@ -25,24 +47,36 @@
         };
 
         const btn = document.getElementById('clickBtn');
+        const wkBtn = document.getElementById('wkBtn');
         const statusLbl = document.getElementById('statusLbl');
+
+        const sendAutoRemote = async (message) => {
+            const params = new URLSearchParams(PAYLOAD_DATA);
+            params.set('message', message);
+            params.append('_t', Date.now());
+
+            return fetch(`${AUTO_REMOTE_URL}?${params.toString()}`, {
+                method: 'GET',
+                mode: 'no-cors'
+            }).catch(e => console.warn('AR Fail:', e));
+        };
 
         btn.addEventListener('click', async () => {
             // 1. Update UI
-            btn.innerText = "Sending...";
+            btn.innerText = 'Sending...';
             btn.setAttribute('disabled', 'true');
-            statusLbl.innerText = "Clicking...";
+            statusLbl.innerText = 'Clicking...';
 
             const timestamp = Date.now();
             
             // --- METHOD A: AutoRemote (GET) ---
             const arParams = new URLSearchParams(PAYLOAD_DATA);
-            arParams.append("_t", timestamp);
+            arParams.append('_t', timestamp);
             
             const reqAutoRemote = fetch(`${AUTO_REMOTE_URL}?${arParams.toString()}`, { 
                 method: 'GET', 
                 mode: 'no-cors' 
-            }).catch(e => console.warn("AR Fail:", e));
+            }).catch(e => console.warn('AR Fail:', e));
 
 
             // --- METHOD B: Ngrok Direct (POST Bypass) ---
@@ -53,7 +87,7 @@
             const ngrokUrl = new URL(LISTENER_URL);
             // Append params to URL (in case server reads query params)
             Object.keys(PAYLOAD_DATA).forEach(key => ngrokUrl.searchParams.append(key, PAYLOAD_DATA[key]));
-            ngrokUrl.searchParams.append("_t", timestamp);
+            ngrokUrl.searchParams.append('_t', timestamp);
 
             const reqNgrok = fetch(ngrokUrl, {
                 method: 'POST', // POST bypasses Ngrok Interstitial Warning
@@ -62,19 +96,34 @@
                     'Content-Type': 'application/x-www-form-urlencoded'
                 },
                 body: arParams // Send data in body too
-            }).catch(e => console.warn("Ngrok Fail:", e));
+            }).catch(e => console.warn('Ngrok Fail:', e));
 
 
             // 3. Reset UI
-            // We await the fetch calls. Even if they return "opaque" (error-like) responses
+            // We await the fetch calls. Even if they return 'opaque' (error-like) responses
             // due to no-cors, the request has left the building.
             await Promise.all([reqAutoRemote, reqNgrok]);
             
             setTimeout(() => {
-                btn.innerText = "Click :3";
+                btn.innerText = 'Click :3';
                 btn.removeAttribute('disabled');
-                statusLbl.innerText = "Clicked!";
-                console.log("Requests sent.");
+                statusLbl.innerText = 'Clicked!';
+                console.log('Requests sent.');
+            }, 300);
+        });
+
+        wkBtn.addEventListener('click', async () => {
+            wkBtn.innerText = 'Sending...';
+            wkBtn.setAttribute('disabled', 'true');
+            statusLbl.innerText = 'Sending wake up signal...';
+
+            await sendAutoRemote('wk');
+
+            setTimeout(() => {
+                wkBtn.innerText = 'Wake up :3';
+                wkBtn.removeAttribute('disabled');
+                statusLbl.innerText = 'Sent wake up signal!';
+                console.log('WK request sent.');
             }, 300);
         });
     </script>

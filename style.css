@@ -32,7 +32,8 @@ body {
 }
 
 .app-window {
-    width: 320px;
+    width: 100%;
+    max-width: 320px;
     padding: 24px;
     background-color: var(--bg-color);
     border: 1px solid #333;
@@ -47,7 +48,8 @@ body {
     background-color: var(--btn-color);
     color: white;
     border: none;
-    width: 220px;
+    width: 100%;
+    max-width: 220px;
     height: 56px;
     border-radius: 14px;
     font-size: 18px;

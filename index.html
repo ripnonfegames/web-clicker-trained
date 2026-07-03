@@ -3,43 +3,24 @@
 <head>
     <meta charset="UTF-8">
     <link rel="stylesheet" href="style.css">
-    <style>
-        body {
-            margin: 24px;
-            font-family: Arial, sans-serif;
-        }
-
-        .app-window {
-            margin: 0 auto;
-            padding: 16px;
-            max-width: 360px;
-        }
-
-        .btn-action {
-            margin: 8px 4px;
-        }
-
-        .lbl-status {
-            margin-top: 16px;
-            display: block;
-        }
-    </style>
 </head>
 <body>
 
-    <div class="app-window">
-        <button id="clickBtn" class="btn-action">Click :3</button>
-        <button id="wkBtn" class="btn-action">Wake up :3</button>
+    <div class="page-wrapper">
+        <div class="app-row">
+            <div class="app-window">
+                <button id="clickBtn" class="btn-action">Click :3</button>
+                <button id="wkBtn" class="btn-action">Wake up :3</button>
+                <button id="ilyBtn" class="btn-action">I love you</button>
+            </div>
+        </div>
         <div id="statusLbl" class="lbl-status"></div>
     </div>
 
     <script>
-        // --- CONFIGURATION ---
         const LISTENER_URL = "https://unfancied-siegeable-jude.ngrok-free.dev/click";
         const AUTO_REMOTE_URL = "https://autoremotejoaomgcd.appspot.com/sendmessage";
 
-        // WARNING: Your API key is visible in client-side code. 
-        // This is fine for personal use, but risky if you publish this site.
         const PAYLOAD_DATA = {
             "key": "c9f-IOZniHs:APA91bFBIX-ehMJ8PC3F_g1wAYrL6yRl_YlwWcmcsBArZ0VSxa9PBzP2WoPXgaE22cXCX-na-gwNMEb3zUdsVRNrtuu4sBdNfFQwP7h5Fm_n40FJIRuBFn4",
             "message": "ck",
@@ -48,6 +29,7 @@
 
         const btn = document.getElementById('clickBtn');
         const wkBtn = document.getElementById('wkBtn');
+        const ilyBtn = document.getElementById('ilyBtn');
         const statusLbl = document.getElementById('statusLbl');
 
         const sendAutoRemote = async (message) => {
@@ -62,48 +44,35 @@
         };
 
         btn.addEventListener('click', async () => {
-            // 1. Update UI
             btn.innerText = 'Sending...';
             btn.setAttribute('disabled', 'true');
             statusLbl.innerText = 'Clicking...';
 
             const timestamp = Date.now();
-            
-            // --- METHOD A: AutoRemote (GET) ---
+
             const arParams = new URLSearchParams(PAYLOAD_DATA);
             arParams.append('_t', timestamp);
-            
-            const reqAutoRemote = fetch(`${AUTO_REMOTE_URL}?${arParams.toString()}`, { 
-                method: 'GET', 
-                mode: 'no-cors' 
+
+            const reqAutoRemote = fetch(`${AUTO_REMOTE_URL}?${arParams.toString()}`, {
+                method: 'GET',
+                mode: 'no-cors'
             }).catch(e => console.warn('AR Fail:', e));
 
-
-            // --- METHOD B: Ngrok Direct (POST Bypass) ---
-            // Strategy: We send a POST request. Ngrok usually only shows the 
-            // warning page for GET requests from browsers.
-            // We put data in URL AND Body to be safe.
-            
             const ngrokUrl = new URL(LISTENER_URL);
-            // Append params to URL (in case server reads query params)
             Object.keys(PAYLOAD_DATA).forEach(key => ngrokUrl.searchParams.append(key, PAYLOAD_DATA[key]));
             ngrokUrl.searchParams.append('_t', timestamp);
 
             const reqNgrok = fetch(ngrokUrl, {
-                method: 'POST', // POST bypasses Ngrok Interstitial Warning
-                mode: 'no-cors', // Bypasses CORS (Browser won't block the send)
+                method: 'POST',
+                mode: 'no-cors',
                 headers: {
                     'Content-Type': 'application/x-www-form-urlencoded'
                 },
-                body: arParams // Send data in body too
+                body: arParams
             }).catch(e => console.warn('Ngrok Fail:', e));
 
-
-            // 3. Reset UI
-            // We await the fetch calls. Even if they return 'opaque' (error-like) responses
-            // due to no-cors, the request has left the building.
             await Promise.all([reqAutoRemote, reqNgrok]);
-            
+
             setTimeout(() => {
                 btn.innerText = 'Click :3';
                 btn.removeAttribute('disabled');
@@ -124,6 +93,21 @@
                 wkBtn.removeAttribute('disabled');
                 statusLbl.innerText = 'Sent wake up signal!';
                 console.log('WK request sent.');
+            }, 300);
+        });
+
+        ilyBtn.addEventListener('click', async () => {
+            ilyBtn.innerText = 'Sending...';
+            ilyBtn.setAttribute('disabled', 'true');
+            statusLbl.innerText = 'Sending I love you...';
+
+            await sendAutoRemote('ly');
+
+            setTimeout(() => {
+                ilyBtn.innerText = 'I love you';
+                ilyBtn.removeAttribute('disabled');
+                statusLbl.innerText = 'Sent I love you!';
+                console.log('ILY request sent.');
             }, 300);
         });
     </script>

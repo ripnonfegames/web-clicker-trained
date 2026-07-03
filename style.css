@@ -34,7 +34,6 @@ body {
 .app-window {
     width: 320px;
     padding: 24px;
-    gap: 14px;
     background-color: var(--bg-color);
     border: 1px solid #333;
     border-radius: 10px;
@@ -56,6 +55,7 @@ body {
     cursor: pointer;
     transition: all 0.2s ease;
     outline: none;
+    margin: 7px 0;
 }
 
 .btn-action:hover { background-color: var(--btn-hover); transform: translateY(-1px); }

@@ -1,9 +1,11 @@
 :root {
-    --bg-color: #1a1a1a;
-    --btn-color: #1f6aa5;
-    --btn-hover: #144870;
+    --bg-color: #2b1f3d;
+    --btn-color: #a06cd5;
+    --btn-hover: #7f50b0;
     --text-color: #ffffff;
-    --status-color: #808080;
+    --status-color: #b9a6d4;
+    --ily-color: #7ec8e3;
+    --ily-hover: #5ba8c9;
 }
 
 body {
@@ -63,6 +65,9 @@ body {
 .btn-action:hover { background-color: var(--btn-hover); transform: translateY(-1px); }
 .btn-action:active { transform: translateY(1px); }
 .btn-action:disabled { background-color: #3a3a3a; color: #888; cursor: not-allowed; transform: none; }
+
+.btn-ily { background-color: var(--ily-color); }
+.btn-ily:hover { background-color: var(--ily-hover); }
 
 .lbl-status {
     margin-top: 15px;

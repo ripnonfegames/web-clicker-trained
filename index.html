@@ -11,8 +11,8 @@
         <div class="app-row">
             <div class="app-window">
                 <button id="clickBtn" class="btn-action">Click :3</button>
-                <button id="wkBtn" class="btn-action">Wake up :3</button>
-                <button id="ilyBtn" class="btn-action">I love you</button>
+                <button id="wkBtn" class="btn-action">Wake up &lt;3</button>
+                <button id="ilyBtn" class="btn-action btn-ily">I love you</button>
             </div>
         </div>
         <div id="statusLbl" class="lbl-status"></div>
@@ -90,7 +90,7 @@
             await sendAutoRemote('wk');
 
             setTimeout(() => {
-                wkBtn.innerText = 'Wake up :3';
+                wkBtn.innerText = 'Wake up <3';
                 wkBtn.removeAttribute('disabled');
                 statusLbl.innerText = 'Sent wake up signal!';
                 console.log('WK request sent.');
@@ -105,7 +105,7 @@
             await sendAutoRemote('ly');
 
             setTimeout(() => {
-                ilyBtn.innerText = 'I love you';
+                ilyBtn.innerText = 'I love you!!';
                 ilyBtn.removeAttribute('disabled');
                 statusLbl.innerText = 'I love you too!';
                 console.log('ILY request sent.');
